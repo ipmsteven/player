@@ -31,6 +31,11 @@ def read_char
   return c
 end
 
+def set_up_notifier(player)
+  song_name = player.current_song_name.split('.').first
+  system("terminal-notifier -title 🎵music -message #{song_name} -open http://github.com/ipmsteven" )
+end
+
 player = Audite.new
 
 # load mp3 or directory
@@ -41,8 +46,10 @@ if Dir.exists?(argv)
   Dir.chdir(argv)
   mp3 = Dir.glob("*.mp3").map { |m| File.expand_path(m) }
   player.load(mp3)
+  set_up_notifier player
 elsif File.exist?(argv)
   player.load(argv)
+  set_up_notifier player
 else
   exit
 end
@@ -74,14 +81,14 @@ while c = read_char
   when "\e[A"
     #puts "UP ARROW"
     player.request_next_song
+    song_name = player.current_song_name.split('.').first
+    set_up_notifier player
     bar = ProgressBar.create( :format => '%a %bᗧ%i %p%% %t',
                              :progress_mark  => ' ',
                              :remainder_mark => '･',
-                             :title => player.current_song_name.split('.').first,
+                             :title => song_name,
                              :total => player.length_in_seconds,
                              :length => 80)
-                             
-    
   when "\e[B"
     #puts "DOWN ARROW"
   when "\e[C"
@@ -94,6 +101,5 @@ while c = read_char
 end
 
 player.thread.join
-
 
 
